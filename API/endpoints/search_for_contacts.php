@@ -15,7 +15,7 @@ function search_for_contacts($info, $conn)
     $search_term = "%" . ($info['firstname'] ?? '') . "%"; // "%" is the wildcard operator, like the kleene star in regex. It means 0 or more occurances of whatever characters
 
     $stmt = $conn->prepare("
-    SELECT COALESCE(JSON_ARRAYAGG(contact_row), '[]') AS contacts
+   SELECT COALESCE(JSON_ARRAYAGG(contact_row), '[]') AS contacts
         FROM (
             SELECT JSON_OBJECT(
                 'id', id,
@@ -28,7 +28,12 @@ function search_for_contacts($info, $conn)
             ) AS contact_row
             FROM contacts
             WHERE user_id = ? 
-            AND firstname LIKE ?
+            AND (
+                firstname LIKE ? 
+                OR lastname LIKE ? 
+                OR email LIKE ? 
+                OR phone LIKE ?
+            )
         ) AS results
     ");
 
